@@ -45,7 +45,16 @@ app.get("/", (req, res) => {
 
 // 전체 상품 조회
 app.get("/products", (req, res) => {
-  res.json(Array.from(db.values()));
+  // Map 객체 조회
+  let products = {};
+
+  db.forEach((value, key) => {
+    products[key] = value;
+  });
+
+  res.json(products);
+
+  // res.json(Array.from(db.values()));
 });
 
 // 개별 상품 조회
@@ -61,11 +70,49 @@ app.get("/products/:id", (req, res) => {
 
 // 상품 등록
 app.use(express.json());
-app.post("/products/add", async (req, res) => {
+app.post("/products/add", (req, res) => {
   const newId = db.size + 1;
 
   db.set(newId, { ...req.body, id: newId });
-
   console.log(db.get(newId));
   res.send(`${db.get(newId).title} 상품이 등록되었습니다.`);
+});
+
+// 개별 상품 삭제
+app.delete("/products/:id", (req, res) => {
+  const id = +req.params.id;
+  const product = db.get(id);
+
+  if (!product) {
+    res.send(`요청하신 ${id} 상품은 없는 상품입니다.`);
+    return;
+  }
+
+  db.delete(id);
+  res.send(`${product.title} 상품이 삭제되었습니다.`);
+});
+
+// 전체 상품 삭제
+app.delete("/products", (req, res) => {
+  if (db.size > 0) {
+    db.clear();
+    res.send("전체 상품이 삭제되었습니다.");
+  } else {
+    res.send("삭제할 상품이 없습니다.");
+  }
+});
+
+// 개별 상품 수정
+app.put("/products/:id", (req, res) => {
+  const id = +req.params.id;
+  const product = db.get(id);
+
+  if (product) {
+    db.set(id, { ...product, ...req.body });
+
+    const newProduct = db.get(id);
+    res.send(`before: ${product}\nafter: ${newProduct}`);
+  } else {
+    res.send("존재하지 않는 상품입니다.");
+  }
 });
