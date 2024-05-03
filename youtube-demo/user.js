@@ -13,8 +13,37 @@ let db = new Map();
 // {id => {userId, pwd, name}}
 
 // ------------------------ api ------------------------
+function isObjectValid(obj) {
+  if (Object.keys(obj).length > 0) {
+    return true;
+  } else {
+    return false;
+  }
+}
+
 // 로그인
-app.post("/login", (req, res) => {});
+app.post("/login", (req, res) => {
+  const { userId, pwd } = req.body;
+  // userId, pwd로 db에 저장된 회원인지 확인
+  // 방법1
+  // db 전체를 배열로 만들어서 찾는건 비효율적
+  // const dbArray = Array.from(db.values())
+  // const user = dbArray.find((user) => user.userId === userId && user.pwd === pwd)
+
+  // 방법2
+  let user = {};
+  db.forEach((dbUser) => {
+    if (dbUser.userId === userId && dbUser.pwd === pwd) {
+      user = { ...dbUser };
+    }
+  });
+
+  if (isObjectValid(user)) {
+    res.status(200).json({ message: `${user.name}님 환영합니다!` });
+  } else {
+    res.status(403).json({ message: "아이디나 비밀번호를 재입력해주세요." });
+  }
+});
 
 // 회원가입
 app.post("/join", (req, res) => {
