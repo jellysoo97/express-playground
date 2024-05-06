@@ -1,10 +1,9 @@
 const express = require("express");
-const app = express();
-const PORT = 7777;
+// router setting
+const router = express.Router();
 
 // returns middleware that only parses json
-app.use(express.json());
-app.listen(PORT);
+router.use(express.json());
 
 // ------------------------ db ------------------------
 let db = new Map();
@@ -22,7 +21,7 @@ function isObjectValid(obj) {
 }
 
 // 로그인
-app.post("/login", (req, res) => {
+router.post("/login", (req, res) => {
   const { userId, pwd } = req.body;
   // userId, pwd로 db에 저장된 회원인지 확인
   // 방법1
@@ -41,12 +40,12 @@ app.post("/login", (req, res) => {
   if (isObjectValid(user)) {
     res.status(200).json({ message: `${user.name}님 환영합니다!` });
   } else {
-    res.status(403).json({ message: "아이디나 비밀번호를 재입력해주세요." });
+    res.status(400).json({ message: "아이디나 비밀번호를 재입력해주세요." });
   }
 });
 
 // 회원가입
-app.post("/join", (req, res) => {
+router.post("/join", (req, res) => {
   const newId = db.size + 1;
 
   if (req.body && !!req.body.userId && !!req.body.pwd && !!req.body.name) {
@@ -63,7 +62,7 @@ app.post("/join", (req, res) => {
 });
 
 // app.route()로 같은 url이면 묶을 수 있다
-app
+router
   .route("/users/:id")
   // 개별 회원 조회
   .get((req, res) => {
@@ -92,3 +91,6 @@ app
       res.status(404).json({ message: "해당하는 유저가 없습니다." });
     }
   });
+
+// export router
+module.exports = router;
