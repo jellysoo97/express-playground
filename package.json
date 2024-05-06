@@ -1,6 +1,6 @@
 {
   "scripts": {
-    "start": "nodemon ./app.js"
+    "start": "nodemon ./youtube-demo/app.js"
   },
   "dependencies": {
     "axios": "^1.6.8",
