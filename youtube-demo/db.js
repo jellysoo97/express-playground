@@ -8,6 +8,8 @@ const connection = mysql.createConnection({
   password: "root",
   // timezone: 'Asia/Seoul',
   database: "youtube",
+  // 로컬 표준 시간대에 맞춰준다.
+  dateStrings: true,
 });
 
 // query
