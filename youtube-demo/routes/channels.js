@@ -1,59 +1,53 @@
 const express = require("express");
 const router = express.Router();
+const conn = require("../db");
 
 router.use(express.json());
 
-// ------------------------ db ------------------------
-let db = new Map();
-
 // ------------------------ api ------------------------
+function isChannelInputValid(channel) {
+  return !!channel.name && !!channel.userId;
+}
+
 router
   .route("/")
   // 전체 채널 조회
-  // two exceptions
-  // 1) userId가 body에 없는 경우 -> 로그인 만료, url로 이동
-  // 2) userId가 만든 채널이 없는 경우
   .get((req, res) => {
     const { userId } = req.body;
+    const sql = `SELECT * FROM channels WHERE user_id = ?;`;
+    const values = userId;
 
-    // body에 userId 없으면
-    if (!userId) {
-      res.status(403).json({ message: "로그인이 필요한 페이지입니다." });
-      return;
+    if (!values) {
+      return res.status(400).end();
     }
 
-    // db가 비어있으면
-    if (!db.size) {
-      notFoundChannel();
-      return;
-    }
-
-    let channels = [];
-
-    db.forEach((value, key) => {
-      // db에 있는 유저면 추가
-      if (userId === value.userId) {
-        channels.push(value);
+    conn.query(sql, values, (_, result) => {
+      if (result?.length) {
+        res.status(200).json(result);
+      } else {
+        notFoundChannel(res);
       }
     });
-
-    // db 돌렸는데 채널이 있으면 200, 없으면 404
-    channels.length ? res.status(200).json(channels) : notFoundChannel();
   })
   // 개별 채널 생성
   .post((req, res) => {
-    const newId = db.size + 1;
+    const { name, userId } = req.body;
+    const sql = `INSERT INTO channels (name, user_id) VALUES (?, ?);`;
+    const values = [name, userId];
 
-    if (req.body && !!req.body.channelTitle) {
-      db.set(newId, req.body);
-
-      const newChannel = db.get(newId);
-      res.status(201).json({
-        message: `${newChannel.userId} 님의 ${newChannel.channelTitle} 채널을 응원합니다!`,
-      });
-    } else {
-      res.status(400).json({ message: "채널명을 입력해주세요." });
+    if (!isChannelInputValid({ name, userId })) {
+      return res
+        .status(400)
+        .json({ message: "채널명 또는 유저 아이디를 입력해주세요." });
     }
+
+    conn.query(sql, values, (err) => {
+      err
+        ? res.status(400).json(err)
+        : res
+            .status(201)
+            .json({ message: `user${userId}님의 ${name} 채널을 응원합니다!` });
+    });
   });
 
 router
@@ -61,13 +55,18 @@ router
   // 개별 채널 조회
   .get((req, res) => {
     const id = +req.params.id;
-    const channel = db.get(id);
+    const sql = `SELECT * FROM channels WHERE id = ?;`;
+    const values = id;
 
-    if (channel) {
-      res.status(200).json(channel);
-    } else {
-      notFoundChannel();
-    }
+    conn.query(sql, values, (_, result) => {
+      if (result?.length) {
+        const { name, sub_cnt, video_cnt } = result[0];
+
+        res.status(200).json({ name, sub_cnt, video_cnt });
+      } else {
+        notFoundChannel(res);
+      }
+    });
   })
   // 개별 채널 수정
   .put((req, res) => {
@@ -100,7 +99,7 @@ router
     }
   });
 
-function notFoundChannel() {
+function notFoundChannel(res) {
   res.status(404).json({ message: "찾으시는 채널이 없습니다." });
 }
 
