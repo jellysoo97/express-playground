@@ -1,96 +1,83 @@
 const express = require("express");
-// router setting
 const router = express.Router();
+const conn = require("../db");
 
-// returns middleware that only parses json
 router.use(express.json());
 
-// ------------------------ db ------------------------
-let db = new Map();
-
-// db 구조
-// {id => {userId, pwd, name}}
-
 // ------------------------ api ------------------------
-function isObjectValid(obj) {
-  if (Object.keys(obj).length > 0) {
-    return true;
-  } else {
-    return false;
-  }
+function isUserInputValid(user) {
+  return user && !!user.email && !!user.name && !!user.password && !!user.phone;
 }
 
 // 로그인
 router.post("/login", (req, res) => {
-  const { userId, pwd } = req.body;
-  // userId, pwd로 db에 저장된 회원인지 확인
-  // 방법1
-  // db 전체를 배열로 만들어서 찾는건 비효율적
-  // const dbArray = Array.from(db.values())
-  // const user = dbArray.find((user) => user.userId === userId && user.pwd === pwd)
+  const { email, password } = req.body;
+  const sql = `SELECT * FROM users WHERE email = ? AND password = ?;`;
+  const values = [email, password];
 
-  // 방법2
-  let user = {};
-  db.forEach((dbUser) => {
-    if (dbUser.userId === userId && dbUser.pwd === pwd) {
-      user = { ...dbUser };
+  conn.query(sql, values, (_, result) => {
+    // query 만족하는 데이터 없으면 result undefined 반환
+    if (result?.length) {
+      const { name } = result[0];
+
+      res.status(200).json({ message: `${name}님 환영합니다!` });
+    } else {
+      res.status(400).json({ message: "아이디나 비밀번호를 재입력해주세요." });
     }
   });
-
-  if (isObjectValid(user)) {
-    res.status(200).json({ message: `${user.name}님 환영합니다!` });
-  } else {
-    res.status(400).json({ message: "아이디나 비밀번호를 재입력해주세요." });
-  }
 });
 
 // 회원가입
 router.post("/join", (req, res) => {
-  const newId = db.size + 1;
-
-  if (req.body && !!req.body.userId && !!req.body.pwd && !!req.body.name) {
-    db.set(newId, req.body);
-
-    const newUser = db.get(newId);
-
-    res.status(201).json({ message: `${newUser.name}님 환영합니다!` });
-  } else {
-    res
+  if (!isUserInputValid(req.body)) {
+    return res
       .status(400)
       .json({ message: "아이디와 비밀번호를 올바르게 입력해주세요." });
   }
+
+  const { email, name, password, phone } = req.body;
+  const sql = `INSERT INTO users (email, name, password, phone) VALUES (?, ?, ?, ?);`;
+  const values = [email, name, password, phone];
+
+  conn.query(sql, values, (err) => {
+    // insert 쿼리는 result가 undefined
+    err
+      ? res.status(400).json(err)
+      : res.status(201).json({ message: `${name}님 환영합니다!` });
+  });
 });
 
-// app.route()로 같은 url이면 묶을 수 있다
 router
-  .route("/users/:id")
+  .route("/users")
   // 개별 회원 조회
   .get((req, res) => {
-    const id = +req.params.id;
-    const user = db.get(id);
+    const { email } = req.body;
+    const sql = `SELECT * FROM users WHERE email = ?;`;
+    const values = email;
 
-    if (user) {
-      const { userId, name } = user;
+    conn.query(sql, values, (_, result) => {
+      if (result?.length) {
+        const { email, name } = result[0];
 
-      res.status(200).json({ userId, name });
-    } else {
-      res.status(404).json({ message: "해당하는 유저가 없습니다." });
-    }
+        res.status(200).json({ email, name });
+      } else {
+        res.status(404).json({ message: "해당하는 유저가 없습니다." });
+      }
+    });
   })
   // 개별 회원 탈퇴
   .delete((req, res) => {
-    const id = +req.params.id;
-    const user = db.get(id);
+    const { email } = req.body;
+    const sql = `DELETE FROM users WHERE email = ?;`;
+    const values = email;
 
-    if (user) {
-      db.delete(id);
-      res
-        .status(200)
-        .json({ message: `${user.name}님 회원 탈퇴 처리가 완료되었습니다.` });
-    } else {
-      res.status(404).json({ message: "해당하는 유저가 없습니다." });
-    }
+    conn.query(sql, values, (_, result) => {
+      result.affectedRows
+        ? res.status(200).json({
+            message: `회원 탈퇴 처리가 완료되었습니다.`,
+          })
+        : res.status(404).json({ message: "해당하는 유저가 없습니다." });
+    });
   });
 
-// export router
 module.exports = router;
