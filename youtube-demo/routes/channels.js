@@ -1,103 +1,172 @@
 const express = require("express");
 const router = express.Router();
 const conn = require("../db");
+const { body, param, validationResult } = require("express-validator");
 
 router.use(express.json());
 
-// ------------------------ api ------------------------
-function isChannelInputValid(channel) {
-  return !!channel.name && !!channel.userId;
-}
+// ------------------------ middleware ------------------------
+const validate = (req, res, next) => {
+  const err = validationResult(req);
 
+  if (!err.isEmpty()) {
+    return res.status(400).json(err.array());
+  }
+
+  // 다음 미들웨어 실행
+  next();
+};
+
+// ------------------------ api ------------------------
 router
   .route("/")
   // 전체 채널 조회
-  .get((req, res) => {
-    const { userId } = req.body;
-    const sql = `SELECT * FROM channels WHERE user_id = ?;`;
-    const values = userId;
+  .get(
+    [
+      body("userId")
+        .notEmpty()
+        .isInt()
+        .withMessage("유저 아이디는 숫자여야 합니다."),
+      validate,
+    ],
+    (req, res) => {
+      const sql = `SELECT * FROM channels WHERE user_id = ?;`;
+      const values = userId;
 
-    if (!values) {
-      return res.status(400).end();
+      conn.query(sql, values, (err, result) => {
+        if (err) {
+          return res.status(400).end();
+        }
+
+        result?.length ? res.status(200).json(result) : notFoundChannel(res);
+      });
     }
-
-    conn.query(sql, values, (_, result) => {
-      if (result?.length) {
-        res.status(200).json(result);
-      } else {
-        notFoundChannel(res);
-      }
-    });
-  })
+  )
   // 개별 채널 생성
-  .post((req, res) => {
-    const { name, userId } = req.body;
-    const sql = `INSERT INTO channels (name, user_id) VALUES (?, ?);`;
-    const values = [name, userId];
+  .post(
+    [
+      body("userId")
+        .notEmpty()
+        .isInt()
+        .withMessage("유저 아이디는 숫자여야 합니다."),
+      body("name")
+        .notEmpty()
+        .isString()
+        .withMessage("채널명은 문자열이어야 합니다.")
+        .isLength({ min: 2 })
+        .withMessage("채널명은 최소 2자리 이상이어야 합니다."),
+    ],
+    (req, res) => {
+      const err = validationResult(req);
 
-    if (!isChannelInputValid({ name, userId })) {
-      return res
-        .status(400)
-        .json({ message: "채널명 또는 유저 아이디를 입력해주세요." });
+      // 유효성 검사 에러가 나면
+      if (!err.isEmpty()) {
+        return res.status(400).json(err.array());
+      }
+
+      const { name, userId } = req.body;
+      const sql = `INSERT INTO channels (name, user_id) VALUES (?, ?);`;
+      const values = [name, userId];
+
+      conn.query(sql, values, (err) => {
+        // 이상한 userId 값을 보내는 경우 등등
+        err
+          ? res.status(400).end()
+          : res.status(201).json({
+              message: `user${userId}님의 ${name} 채널을 응원합니다!`,
+            });
+      });
     }
-
-    conn.query(sql, values, (err) => {
-      err
-        ? res.status(400).json(err)
-        : res
-            .status(201)
-            .json({ message: `user${userId}님의 ${name} 채널을 응원합니다!` });
-    });
-  });
+  );
 
 router
   .route("/:id")
   // 개별 채널 조회
-  .get((req, res) => {
-    const id = +req.params.id;
-    const sql = `SELECT * FROM channels WHERE id = ?;`;
-    const values = id;
+  .get(
+    param("id").notEmpty().withMessage("채널 아이디를 입력해주세요."),
+    (req, res) => {
+      const err = validationResult(req);
 
-    conn.query(sql, values, (_, result) => {
-      if (result?.length) {
-        const { name, sub_cnt, video_cnt } = result[0];
-
-        res.status(200).json({ name, sub_cnt, video_cnt });
-      } else {
-        notFoundChannel(res);
+      if (!err.isEmpty()) {
+        return res.status(400).json(err.array());
       }
-    });
-  })
-  // 개별 채널 수정
-  .put((req, res) => {
-    const id = +req.params.id;
-    const channel = db.get(id);
 
-    if (channel) {
-      db.set(id, { ...channel, ...req.body });
-      res.status(200).json({
-        message: `채널 정보가 수정되었습니다. 기존: ${channel} -> 수정 후: ${db.get(
-          id
-        )}`,
+      const id = +req.params.id;
+      const sql = `SELECT * FROM channels WHERE id = ?;`;
+      const values = id;
+
+      conn.query(sql, values, (err, result) => {
+        if (err) {
+          return res.status(400).end();
+        }
+
+        result?.length ? res.status(200).json(result) : notFoundChannel(res);
       });
-    } else {
-      notFoundChannel();
     }
-  })
-  // 개별 채널 삭제
-  .delete((req, res) => {
-    const id = +req.params.id;
-    const channel = db.get(id);
+  )
+  // 개별 채널 수정
+  .put(
+    [
+      param("id").notEmpty().withMessage("채널 아이디를 입력해주세요."),
+      body("name")
+        .notEmpty()
+        .isString()
+        .withMessage("채널명을 문자열로 입력해주세요."),
+      body("subCnt").isInt().withMessage("구독자수를 숫자로 입력해주세요."),
+      body("videoCnt").isInt().withMessage("영상수를 숫자로 입력해주세요."),
+      body("userId")
+        .notEmpty()
+        .isInt()
+        .withMessage("유저 아이디를 숫자로 입력해주세요."),
+    ],
+    (req, res) => {
+      const err = validationResult(req);
 
-    if (channel) {
-      db.delete(id);
-      res
-        .status(200)
-        .json({ message: `${channel.channelTitle} 채널이 삭제되었습니다.` });
-    } else {
-      notFoundChannel();
+      if (!err.isEmpty()) {
+        console.log(req);
+        return res.status(400).json(err.array());
+      }
+
+      const id = +req.params.id;
+      const { name, subCnt, videoCnt, userId } = req.body;
+      const sql = `UPDATE channels SET name = ?, sub_cnt = ?, video_cnt = ? WHERE id = ? AND user_id = ?;`;
+      const values = [name, subCnt, videoCnt, id, userId];
+
+      conn.query(sql, values, (err, result) => {
+        if (err) {
+          return res.status(400).end();
+        }
+
+        result?.affectedRows
+          ? res.status(200).json(result)
+          : res.status(400).end();
+      });
     }
-  });
+  )
+  // 개별 채널 삭제
+  .delete(
+    param("id").notEmpty().withMessage("채널 아이디를 입력해주세요."),
+    (req, res) => {
+      const err = validationResult(req);
+
+      if (!err.isEmpty()) {
+        console.log(req);
+        return res.status(400).json(err.array());
+      }
+
+      const id = +req.params.id;
+      const sql = `DELETE FROM channels WHERE id = ?;`;
+      const values = id;
+
+      conn.query(sql, values, (_, result) => {
+        result.affectedRows
+          ? res.status(200).json({
+              message: `채널 삭제가 완료되었습니다.`,
+            })
+          : res.status(400).end();
+      });
+    }
+  );
 
 function notFoundChannel(res) {
   res.status(404).json({ message: "찾으시는 채널이 없습니다." });
