@@ -5,17 +5,19 @@ const { body, param, validationResult } = require("express-validator");
 
 router.use(express.json());
 
-// ------------------------ middleware ------------------------
 const validate = (req, res, next) => {
   const err = validationResult(req);
 
-  if (!err.isEmpty()) {
-    return res.status(400).json(err.array());
+  if (err.isEmpty()) {
+    return next();
   }
 
-  // 다음 미들웨어 실행
-  next();
+  res.status(400).json(err.array());
 };
+
+function notFoundChannel(res) {
+  res.status(404).json({ message: "찾으시는 채널이 없습니다." });
+}
 
 // ------------------------ api ------------------------
 router
@@ -30,6 +32,7 @@ router
       validate,
     ],
     (req, res) => {
+      const { userId } = req.body;
       const sql = `SELECT * FROM channels WHERE user_id = ?;`;
       const values = userId;
 
@@ -45,31 +48,24 @@ router
   // 개별 채널 생성
   .post(
     [
-      body("userId")
-        .notEmpty()
-        .isInt()
-        .withMessage("유저 아이디는 숫자여야 합니다."),
       body("name")
         .notEmpty()
         .isString()
         .withMessage("채널명은 문자열이어야 합니다.")
         .isLength({ min: 2 })
         .withMessage("채널명은 최소 2자리 이상이어야 합니다."),
+      body("userId")
+        .notEmpty()
+        .isInt()
+        .withMessage("유저 아이디는 숫자여야 합니다."),
+      validate,
     ],
     (req, res) => {
-      const err = validationResult(req);
-
-      // 유효성 검사 에러가 나면
-      if (!err.isEmpty()) {
-        return res.status(400).json(err.array());
-      }
-
       const { name, userId } = req.body;
       const sql = `INSERT INTO channels (name, user_id) VALUES (?, ?);`;
       const values = [name, userId];
 
       conn.query(sql, values, (err) => {
-        // 이상한 userId 값을 보내는 경우 등등
         err
           ? res.status(400).end()
           : res.status(201).json({
@@ -83,14 +79,11 @@ router
   .route("/:id")
   // 개별 채널 조회
   .get(
-    param("id").notEmpty().withMessage("채널 아이디를 입력해주세요."),
+    [
+      param("id").notEmpty().withMessage("채널 아이디를 입력해주세요."),
+      validate,
+    ],
     (req, res) => {
-      const err = validationResult(req);
-
-      if (!err.isEmpty()) {
-        return res.status(400).json(err.array());
-      }
-
       const id = +req.params.id;
       const sql = `SELECT * FROM channels WHERE id = ?;`;
       const values = id;
@@ -118,15 +111,9 @@ router
         .notEmpty()
         .isInt()
         .withMessage("유저 아이디를 숫자로 입력해주세요."),
+      validate,
     ],
     (req, res) => {
-      const err = validationResult(req);
-
-      if (!err.isEmpty()) {
-        console.log(req);
-        return res.status(400).json(err.array());
-      }
-
       const id = +req.params.id;
       const { name, subCnt, videoCnt, userId } = req.body;
       const sql = `UPDATE channels SET name = ?, sub_cnt = ?, video_cnt = ? WHERE id = ? AND user_id = ?;`;
@@ -145,15 +132,11 @@ router
   )
   // 개별 채널 삭제
   .delete(
-    param("id").notEmpty().withMessage("채널 아이디를 입력해주세요."),
+    [
+      param("id").notEmpty().withMessage("채널 아이디를 입력해주세요."),
+      validate,
+    ],
     (req, res) => {
-      const err = validationResult(req);
-
-      if (!err.isEmpty()) {
-        console.log(req);
-        return res.status(400).json(err.array());
-      }
-
       const id = +req.params.id;
       const sql = `DELETE FROM channels WHERE id = ?;`;
       const values = id;
@@ -167,9 +150,5 @@ router
       });
     }
   );
-
-function notFoundChannel(res) {
-  res.status(404).json({ message: "찾으시는 채널이 없습니다." });
-}
 
 module.exports = router;
