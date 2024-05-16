@@ -1,9 +1,11 @@
 // server setting
 const express = require("express");
-const app = express();
-const PORT = 7777;
+const dotenv = require("dotenv");
 
-app.listen(PORT);
+const app = express();
+
+dotenv.config();
+app.listen(process.env.EXPRESS_PORT_NUMBER);
 
 // router module 소환
 const userRouter = require("./routes/users");
