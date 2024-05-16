@@ -4,7 +4,7 @@ const dotenv = require("dotenv");
 
 const app = express();
 
-dotenv.config();
+dotenv.config({ path: "./youtube-demo/.env" });
 app.listen(process.env.EXPRESS_PORT_NUMBER);
 
 // router module 소환
