@@ -2,7 +2,7 @@
 const mysql = require("mysql2");
 const dotenv = require("dotenv");
 
-dotenv.config();
+dotenv.config({ path: "./youtube-demo/.env" });
 
 // create connection to database
 const connection = mysql.createConnection({

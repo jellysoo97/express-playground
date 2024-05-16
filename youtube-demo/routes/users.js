@@ -5,7 +5,7 @@ const { body, validationResult } = require("express-validator");
 const jwt = require("jsonwebtoken");
 const dotenv = require("dotenv");
 
-dotenv.config();
+dotenv.config({ path: "./youtube-demo/.env" });
 router.use(express.json());
 
 const validate = (req, res, next) => {
@@ -44,12 +44,17 @@ router.post(
       // query 만족하는 데이터 없으면 result undefined 반환
       if (result?.length) {
         const { email, name } = result[0];
-        const token = jwt.sign({ email, name }, process.env.PRIVATE_KEY);
+        const token = jwt.sign({ email, name }, process.env.PRIVATE_KEY, {
+          expiresIn: "3d",
+          issuer: "psy",
+        });
 
-        res.status(200).json({ message: `${name}님 환영합니다!`, token });
+        res.cookie("token", token, { httpOnly: true });
+        res.status(200).json({ message: `${name}님 환영합니다!` });
       } else {
         res
-          .status(400)
+          // forbidden
+          .status(403)
           .json({ message: "아이디나 비밀번호를 재입력해주세요." });
       }
     });
