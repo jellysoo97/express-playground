@@ -1,4 +1,4 @@
-const { body } = require("express-validator");
+const { body, param } = require("express-validator");
 
 const userValidationRules = {
   join: [
@@ -41,4 +41,14 @@ const userValidationRules = {
   ],
 };
 
-module.exports = { userValidationRules };
+const bookValidationRules = {
+  getBookById: [
+    param("id")
+      .trim()
+      .notEmpty()
+      .isInt()
+      .withMessage("책 아이디는 숫자입니다."),
+  ],
+};
+
+module.exports = { userValidationRules, bookValidationRules };
