@@ -2,7 +2,6 @@ const { validationResult } = require("express-validator");
 const { StatusCodes } = require("http-status-codes");
 
 const bookModel = require("../models/book");
-const config = require("../config");
 
 const getAllBooks = async (req, res) => {
   try {
@@ -12,6 +11,7 @@ const getAllBooks = async (req, res) => {
       res
         .status(StatusCodes.NOT_FOUND)
         .json({ message: "등록된 도서가 없습니다." });
+      return;
     }
 
     res.status(StatusCodes.OK).json(rows);
@@ -35,13 +35,13 @@ const getBookById = async (req, res) => {
     }
 
     const { id } = req.params;
-    const bookId = +id;
-    const [rows] = await bookModel.getBookById(bookId);
+    const [rows] = await bookModel.getBookById(+id);
 
     if (rows.length === 0) {
       res
         .status(StatusCodes.NOT_FOUND)
         .json({ message: "해당 도서가 없습니다." });
+      return;
     }
 
     res.status(StatusCodes.OK).json(rows);
@@ -63,11 +63,23 @@ const getBooksByCategory = async (req, res) => {
         .status(StatusCodes.BAD_REQUEST)
         .json({ message: validationErrors.array() });
     }
+
+    const { categoryId } = req.query;
+    const [rows] = await bookModel.getBooksByCategory(+categoryId);
+
+    if (rows.length === 0) {
+      res
+        .status(StatusCodes.NOT_FOUND)
+        .json({ message: "해당 카테고리의 도서가 없습니다." });
+      return;
+    }
+
+    res.status(StatusCodes.OK).json(rows);
   } catch (error) {
     console.log(error);
     res
       .status(StatusCodes.INTERNAL_SERVER_ERROR)
-      .json({ message: "회원가입을 실패했습니다." });
+      .json({ message: "해당 카테고리별 도서 조회를 실패했습니다." });
   }
 };
 

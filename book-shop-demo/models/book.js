@@ -7,6 +7,11 @@ const bookModel = {
   getBookById: (id) => {
     return conn.promise().execute("SELECT * FROM books WHERE id=?", [id]);
   },
+  getBooksByCategory: (categoryId) => {
+    return conn
+      .promise()
+      .execute("SELECT * FROM books WHERE category_id=?", [categoryId]);
+  },
 };
 
 module.exports = bookModel;

@@ -1,4 +1,4 @@
-const { body, param } = require("express-validator");
+const { body, param, query } = require("express-validator");
 
 const userValidationRules = {
   join: [
@@ -48,6 +48,13 @@ const bookValidationRules = {
       .notEmpty()
       .isInt()
       .withMessage("책 아이디는 숫자입니다."),
+  ],
+  getBooksByCategory: [
+    query("categoryId")
+      .trim()
+      .notEmpty()
+      .isInt()
+      .withMessage("카테고리 아이디는 숫자입니다."),
   ],
 };
 
