@@ -63,4 +63,18 @@ const bookValidationRules = {
   ],
 };
 
-module.exports = { userValidationRules, bookValidationRules };
+const likeValidationRules = {
+  addLike: [
+    param("id")
+      .trim()
+      .notEmpty()
+      .isInt()
+      .withMessage("책 아이디는 숫자입니다."),
+  ],
+};
+
+module.exports = {
+  userValidationRules,
+  bookValidationRules,
+  likeValidationRules,
+};
