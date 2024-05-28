@@ -1,27 +1,14 @@
-const { validationResult } = require("express-validator");
-const jwt = require("jsonwebtoken");
 const { StatusCodes } = require("http-status-codes");
+const userModel = require("../models/user");
 const {
   generateHashedPassword,
   generateHashedPasswordWithSalt,
-} = require("../middlewares/password-encyption");
+} = require("../utils/generate-hashed-password");
 
-const userModel = require("../models/user");
-const config = require("../config");
-
+// 회원가입
 const join = async (req, res) => {
   try {
-    const validationErrors = validationResult(req);
-    const hasValidationErrors = !validationErrors.isEmpty();
-
-    if (hasValidationErrors) {
-      return res
-        .status(StatusCodes.BAD_REQUEST)
-        .json({ message: validationErrors.array() });
-    }
-
     const { email, password } = req.body;
-    // 비밀번호 암호화
     const { salt, hashedPassword } = generateHashedPassword(password);
 
     await userModel.create({ email, password: hashedPassword, salt });
@@ -34,17 +21,9 @@ const join = async (req, res) => {
   }
 };
 
+// 로그인
 const login = async (req, res) => {
   try {
-    const validationErrors = validationResult(req);
-    const hasValidationErrors = !validationErrors.isEmpty();
-
-    if (hasValidationErrors) {
-      return res
-        .status(StatusCodes.BAD_REQUEST)
-        .json({ message: validationErrors.array() });
-    }
-
     const { email, password } = req.body;
     const [rows] = await userModel.login(email);
 
@@ -55,12 +34,7 @@ const login = async (req, res) => {
     }
 
     const user = rows[0];
-    // db에 저장된 salt 가지고 다시 암호화
-    const hashedPassword = generateHashedPasswordWithSalt(
-      user.password,
-      user.salt
-    );
-    // 저장된 암호와 비교
+    const hashedPassword = generateHashedPasswordWithSalt(password, user.salt);
     const isPasswordValid = user.password === hashedPassword;
 
     if (!isPasswordValid) {
@@ -88,15 +62,6 @@ const login = async (req, res) => {
 
 const checkUser = async (req, res) => {
   try {
-    const validationErrors = validationResult(req);
-    const hasValidationErrors = !validationErrors.isEmpty();
-
-    if (hasValidationErrors) {
-      return res
-        .status(StatusCodes.BAD_REQUEST)
-        .json({ message: validationErrors.array() });
-    }
-
     const { email } = req.body;
     const [rows] = await userModel.login(email);
 
@@ -120,29 +85,13 @@ const checkUser = async (req, res) => {
 
 const resetPassword = async (req, res) => {
   try {
-    const validationErrors = validationResult(req);
-    const hasValidationErrors = !validationErrors.isEmpty();
-
-    if (hasValidationErrors) {
-      return res
-        .status(StatusCodes.BAD_REQUEST)
-        .json({ message: validationErrors.array() });
-    }
-
     const { email, password } = req.body;
     const { salt, hashedPassword } = generateHashedPassword(password);
-    // salt도 같이 업데이트
-    const [rows] = await userModel.resetPassword({
+    await userModel.resetPassword({
       email,
       password: hashedPassword,
       salt,
     });
-
-    if (rows.length === 0) {
-      return res
-        .status(StatusCodes.BAD_REQUEST)
-        .json({ message: "유효하지 않은 로그인 정보입니다." });
-    }
 
     res
       .status(StatusCodes.OK)
@@ -155,11 +104,11 @@ const resetPassword = async (req, res) => {
   }
 };
 
-const authService = {
+const userController = {
   join,
   login,
   checkUser,
   resetPassword,
 };
 
-module.exports = authService;
+module.exports = userController;
