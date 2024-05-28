@@ -1,6 +1,10 @@
 const conn = require("../config/db");
 
-const DEFAULT_SELECT_QUERY = "SELECT * FROM books";
+const LIKES_COUNT_QUERY =
+  "(SELECT count(*) FROM likes WHERE liked_book_id=books.id) AS likes";
+const LIKED_QUERY =
+  "(SELECT EXISTS (SELECT * FROM likes WHERE liked_book_id=? AND user_id=?)) AS liked";
+const DEFAULT_SELECT_QUERY = `SELECT * FROM books`;
 const PAGINATION_QUERY = "LIMIT ? OFFSET ?";
 const DATE_RANGE_QUERY =
   "pub_date BETWEEN DATE_SUB(NOW(), INTERVAL 1 MONTH) AND NOW()";
@@ -29,12 +33,12 @@ const bookModel = {
         [n, offset]
       );
   },
-  getBookById: (id) => {
+  getBookById: ({ bookId, userId }) => {
     return conn
       .promise()
       .execute(
-        `${DEFAULT_SELECT_QUERY} LEFT JOIN category ON books.category_id=category.id WHERE books.id=?`,
-        [id]
+        `SELECT *, ${LIKES_COUNT_QUERY}, ${LIKED_QUERY} FROM books LEFT JOIN category ON books.category_id=category.category_id WHERE books.id=?`,
+        [bookId, userId, bookId]
       );
   },
 };

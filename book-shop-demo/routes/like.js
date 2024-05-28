@@ -7,11 +7,15 @@ const likeController = require("../controllers/like");
 
 // ------------------------ api ------------------------
 // 좋아요 추가
-router.post("/:id", validate(likeValidation.addLike), likeController.addLike);
+router.post(
+  "/:likedBookId",
+  validate(likeValidation.addLike),
+  likeController.addLike
+);
 
 // 좋아요 삭제
 router.delete(
-  "/:id",
+  "/:likedBookId",
   validate(likeValidation.removeLike),
   likeController.removeLike
 );

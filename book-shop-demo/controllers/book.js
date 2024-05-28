@@ -31,7 +31,11 @@ const getAllBooks = async (req, res) => {
 const getBookById = async (req, res) => {
   try {
     const { id } = req.params;
-    const [rows] = await bookModel.getBookById(+id);
+    const { userId } = req.body;
+    const [rows] = await bookModel.getBookById({
+      bookId: +id,
+      userId: +userId,
+    });
 
     if (rows.length === 0) {
       return res

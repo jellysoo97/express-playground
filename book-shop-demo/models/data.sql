@@ -42,3 +42,5 @@ INSERT INTO likes (user_id, liked_book_id) VALUES (2, 1);
 INSERT INTO likes (user_id, liked_book_id) VALUES (2, 2);
 INSERT INTO likes (user_id, liked_book_id) VALUES (2, 3);
 INSERT INTO likes (user_id, liked_book_id) VALUES (2, 5);
+--
+DELETE FROM likes WHERE user_id = 1 AND liked_book_id = 3;
