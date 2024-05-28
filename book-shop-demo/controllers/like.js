@@ -19,12 +19,12 @@ const addLike = async (req, res) => {
 };
 
 // 좋아요 삭제
-const removeLike = async (req, res) => {
+const deleteLike = async (req, res) => {
   try {
     const { likedBookId } = req.params;
     const { userId } = req.body;
 
-    await likeModel.removeLike(+userId, +likedBookId);
+    await likeModel.deleteLike(+userId, +likedBookId);
     res.status(StatusCodes.OK).json({ message: "좋아요 삭제 성공했습니다." });
   } catch (error) {
     console.log(error);
@@ -36,7 +36,7 @@ const removeLike = async (req, res) => {
 
 const likeController = {
   addLike,
-  removeLike,
+  deleteLike,
 };
 
 module.exports = likeController;

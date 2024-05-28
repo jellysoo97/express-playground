@@ -8,7 +8,7 @@ const likeValidation = {
       .isInt()
       .withMessage("책 아이디는 숫자입니다."),
   ],
-  removeLike: [
+  deleteLike: [
     param("likedBookId")
       .trim()
       .notEmpty()

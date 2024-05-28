@@ -16,8 +16,8 @@ router.post(
 // 좋아요 삭제
 router.delete(
   "/:likedBookId",
-  validate(likeValidation.removeLike),
-  likeController.removeLike
+  validate(likeValidation.deleteLike),
+  likeController.deleteLike
 );
 
 module.exports = router;
