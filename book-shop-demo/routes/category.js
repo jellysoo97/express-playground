@@ -1,9 +1,10 @@
 const express = require("express");
-const categoryService = require("../services/category");
 const router = express.Router();
+
+const categoryController = require("../controllers/category");
 
 // ------------------------ api ------------------------
 // 카테고리 전체 조회
-router.get("/", categoryService.getAllCategories);
+router.get("/", categoryController.getAllCategories);
 
 module.exports = router;

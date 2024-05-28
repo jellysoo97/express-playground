@@ -2,12 +2,12 @@ const express = require("express");
 const app = express();
 
 const config = require("./config");
-const userRouter = require("./routes/users");
-const bookRouter = require("./routes/books");
+const userRouter = require("./routes/user");
+const bookRouter = require("./routes/book");
 const categoryRouter = require("./routes/category");
-const likeRouter = require("./routes/likes");
-const cartRouter = require("./routes/carts");
-const orderRouter = require("./routes/orders");
+const likeRouter = require("./routes/like");
+const cartRouter = require("./routes/cart");
+const orderRouter = require("./routes/order");
 
 app.use(express.json());
 app.use("/users", userRouter);

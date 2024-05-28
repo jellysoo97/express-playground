@@ -2,40 +2,20 @@ const conn = require("../config/db");
 
 const DEFAULT_SELECT_QUERY = "SELECT * FROM books";
 const PAGINATION_QUERY = "LIMIT ? OFFSET ?";
+const DATE_RANGE_QUERY =
+  "pub_date BETWEEN DATE_SUB(NOW(), INTERVAL 1 MONTH) AND NOW()";
 
 const bookModel = {
-  getAllBooks: (isNew, n, page) => {
+  getAllBooks: ({ isNew, categoryId, n, page }) => {
     const offset = n * (page - 1);
 
-    if (isNew === "true") {
+    if (categoryId) {
       return conn
         .promise()
         .execute(
-          `${DEFAULT_SELECT_QUERY} WHERE pub_date BETWEEN DATE_SUB(NOW(), INTERVAL 1 MONTH) AND NOW() ${PAGINATION_QUERY}`,
-          [n, offset]
-        );
-    }
-
-    return conn
-      .promise()
-      .execute(`${DEFAULT_SELECT_QUERY} ${PAGINATION_QUERY}`, [n, offset]);
-  },
-  getBookById: (id) => {
-    return conn
-      .promise()
-      .execute(
-        "SELECT * FROM books LEFT JOIN category ON books.category_id=category.id WHERE books.id=?",
-        [id]
-      );
-  },
-  getBooksByCategory: ({ categoryId, isNew, n, page }) => {
-    const offset = n * (page - 1);
-
-    if (isNew === "true") {
-      return conn
-        .promise()
-        .execute(
-          `${DEFAULT_SELECT_QUERY} WHERE category_id=? AND pub_date BETWEEN DATE_SUB(NOW(), INTERVAL 1 MONTH) AND NOW() ${PAGINATION_QUERY}`,
+          `${DEFAULT_SELECT_QUERY} WHERE category_id=? ${
+            isNew ? `AND ${DATE_RANGE_QUERY}` : ``
+          } ${PAGINATION_QUERY}`,
           [categoryId, n, offset]
         );
     }
@@ -43,8 +23,18 @@ const bookModel = {
     return conn
       .promise()
       .execute(
-        `${DEFAULT_SELECT_QUERY} WHERE category_id=? ${PAGINATION_QUERY}`,
-        [categoryId, n, offset]
+        `${DEFAULT_SELECT_QUERY} ${
+          isNew ? `WHERE ${DATE_RANGE_QUERY}` : ``
+        } ${PAGINATION_QUERY}`,
+        [n, offset]
+      );
+  },
+  getBookById: (id) => {
+    return conn
+      .promise()
+      .execute(
+        `${DEFAULT_SELECT_QUERY} LEFT JOIN category ON books.category_id=category.id WHERE books.id=?`,
+        [id]
       );
   },
 };

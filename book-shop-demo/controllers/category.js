@@ -6,10 +6,9 @@ const getAllCategories = async (req, res) => {
     const [rows] = await categoryModel.getAllCategories();
 
     if (rows.length === 0) {
-      res
+      return res
         .status(StatusCodes.NOT_FOUND)
         .json({ message: "등록된 카테고리가 없습니다." });
-      return;
     }
 
     res.status(StatusCodes.OK).json(rows);
@@ -21,8 +20,8 @@ const getAllCategories = async (req, res) => {
   }
 };
 
-const categoryService = {
+const categoryController = {
   getAllCategories,
 };
 
-module.exports = categoryService;
+module.exports = categoryController;
