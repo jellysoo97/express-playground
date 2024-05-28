@@ -9,7 +9,7 @@ const likeModel = {
         likedBookId,
       ]);
   },
-  removeLike: (userId, likedBookId) => {
+  deleteLike: (userId, likedBookId) => {
     return conn
       .promise()
       .execute("DELETE FROM likes WHERE user_id = ? AND liked_book_id = ?", [
