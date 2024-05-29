@@ -49,4 +49,14 @@ INSERT INTO cartItems (book_id, quantity, user_id) VALUES (1, 1, 1);
 --
 SELECT cartItems.id, book_id, title, summary, quantity, price FROM cartItems LEFT JOIN books ON cartItems.book_id = books.id;
 --
-SELECT * FROM Bookshop.cartItems WHERE user_id=1 AND id IN (1,3);
+SELECT * FROM cartItems WHERE user_id=1 AND id IN (1,3);
+--
+INSERT INTO delivery (address, receiver, contact) VALUES ("서울시 중구", "김송아", "010-1234-5678");
+--
+INSERT INTO orders (book_title, total_quantity, total_price, user_id, delivery_id) 
+VALUES ("어린왕자들", 3, 60000, 1, (SELECT max(id) FROM delivery));
+--
+INSERT INTO orderedList (order_id, book_id, quantity)
+VALUES ((SELECT max(id) FROM orders), 1, 1);
+INSERT INTO orderedList (order_id, book_id, quantity)
+VALUES ((SELECT max(id) FROM orders), 3, 2);
