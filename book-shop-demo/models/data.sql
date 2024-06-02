@@ -60,3 +60,8 @@ INSERT INTO orderedList (order_id, book_id, quantity)
 VALUES ((SELECT max(id) FROM orders), 1, 1);
 INSERT INTO orderedList (order_id, book_id, quantity)
 VALUES ((SELECT max(id) FROM orders), 3, 2);
+--
+SELECT max(id) FROM orderedList;
+SELECT last_insert_id()
+--
+DELETE FROM cartItems WHERE id IN (1,2,3); 

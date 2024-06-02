@@ -5,15 +5,11 @@ const orderValidation = {
     body("items")
       .notEmpty()
       .isArray()
-      .withMessage("선택된 상품이 없습니다.")
+      .withMessage("장바구니 아이디 리스트가 없습니다.")
       .custom((items) => {
         for (const item of items) {
-          if (!("bookId" in item) || typeof item.bookId !== "number") {
-            throw new Error("장바구니 도서 아이디는 숫자입니다.");
-          }
-
-          if (!("quantity" in item) || typeof item.quantity !== "number") {
-            throw new Error("장바구니 수량은 숫자입니다.");
+          if (typeof item !== "number" || item === null) {
+            throw new Error("장바구니 아이디는 숫자입니다.");
           }
 
           return true;

@@ -28,18 +28,29 @@ const orderModel = {
     );
     const orderId = ordersResult.insertId;
 
-    // 3. insert into orderedList
-    const orderedList = items.map((item) => [
+    // 3. get cartItems info
+    const [cartItemsResult] = await conn
+      .promise()
+      .query("SELECT book_id, quantity FROM cartItems WHERE id IN (?)", [
+        items,
+      ]);
+
+    // 4. insert into orderedList
+    const orderedList = cartItemsResult.map((item) => [
       orderId,
-      item.bookId,
+      item.book_id,
       item.quantity,
     ]);
-    conn
+    await conn
       .promise()
-      .query(
-        `INSERT INTO orderedList (order_id, book_id, quantity) VALUES (?)`,
-        [...orderedList]
-      );
+      .query(`INSERT INTO orderedList (order_id, book_id, quantity) VALUES ?`, [
+        orderedList,
+      ]);
+
+    // 5. delete items from cart
+    return conn
+      .promise()
+      .query(`DELETE FROM cartItems WHERE id IN (?)`, [items]);
   },
   getOrderList: () => {
     return conn.promise().execute("");
