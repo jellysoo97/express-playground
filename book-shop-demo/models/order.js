@@ -53,10 +53,22 @@ const orderModel = {
       .query(`DELETE FROM cartItems WHERE id IN (?)`, [items]);
   },
   getOrderList: () => {
-    return conn.promise().execute("");
+    return conn.promise().execute(`
+      SELECT orders.id, created_at, address, receiver, contact, book_title, total_quantity, total_price
+      FROM orders
+      LEFT JOIN delivery ON orders.delivery_id = delivery.id
+    `);
   },
-  getOrderDetail: () => {
-    return conn.promise().execute("");
+  getOrderDetail: (orderId) => {
+    return conn.promise().execute(
+      `
+      SELECT orderedList.book_id, title, author, price, quantity
+      FROM orderedList
+      LEFT JOIN books ON orderedList.book_id = books.id
+      WHERE order_id = ?
+    `,
+      [orderId]
+    );
   },
 };
 
