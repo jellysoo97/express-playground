@@ -28,24 +28,47 @@ const orderModel = {
     );
     const orderId = ordersResult.insertId;
 
-    // 3. insert into orderedList
-    const orderedList = items.map((item) => [
+    // 3. get cartItems info
+    const [cartItemsResult] = await conn
+      .promise()
+      .query("SELECT book_id, quantity FROM cartItems WHERE id IN (?)", [
+        items,
+      ]);
+
+    // 4. insert into orderedList
+    const orderedList = cartItemsResult.map((item) => [
       orderId,
-      item.bookId,
+      item.book_id,
       item.quantity,
     ]);
-    conn
+    await conn
       .promise()
-      .query(
-        `INSERT INTO orderedList (order_id, book_id, quantity) VALUES (?)`,
-        [...orderedList]
-      );
+      .query(`INSERT INTO orderedList (order_id, book_id, quantity) VALUES ?`, [
+        orderedList,
+      ]);
+
+    // 5. delete items from cart
+    return conn
+      .promise()
+      .query(`DELETE FROM cartItems WHERE id IN (?)`, [items]);
   },
   getOrderList: () => {
-    return conn.promise().execute("");
+    return conn.promise().execute(`
+      SELECT orders.id, created_at, address, receiver, contact, book_title, total_quantity, total_price
+      FROM orders
+      LEFT JOIN delivery ON orders.delivery_id = delivery.id
+    `);
   },
-  getOrderDetail: () => {
-    return conn.promise().execute("");
+  getOrderDetail: (orderId) => {
+    return conn.promise().execute(
+      `
+      SELECT orderedList.book_id, title, author, price, quantity
+      FROM orderedList
+      LEFT JOIN books ON orderedList.book_id = books.id
+      WHERE order_id = ?
+    `,
+      [orderId]
+    );
   },
 };
 
