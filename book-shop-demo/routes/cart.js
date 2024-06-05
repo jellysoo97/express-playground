@@ -17,7 +17,7 @@ router.get(
 
 // 장바구니 아이템 삭제
 router.delete(
-  "/:id",
+  "/:cartItemId",
   validate(cartValidation.removeCart),
   cartController.deleteCart
 );

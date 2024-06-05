@@ -1,21 +1,38 @@
 const { StatusCodes } = require("http-status-codes");
 const cartModel = require("../models/cart");
+const { verifyToken } = require("../utils/auth");
+const { TokenExpiredError, JsonWebTokenError } = require("jsonwebtoken");
 
 // 장바구니 담기
 const addToCart = async (req, res) => {
   try {
-    const { bookId, quantity, userId } = req.body;
+    const { bookId, quantity } = req.body;
+    const token = req.headers.authorization;
+    const { userId } = await verifyToken(token);
 
     await cartModel.addToCart({
       bookId: +bookId,
       quantity: +quantity,
-      userId: +userId,
+      userId,
     });
     res
       .status(StatusCodes.OK)
       .json({ message: "장바구니 담기를 성공했습니다." });
   } catch (error) {
     console.log(error);
+
+    if (error instanceof TokenExpiredError) {
+      return res
+        .status(StatusCodes.UNAUTHORIZED)
+        .json({ message: "로그인 세션이 만료되었습니다. 다시 로그인하세요." });
+    }
+
+    if (error instanceof JsonWebTokenError) {
+      return res
+        .status(StatusCodes.BAD_REQUEST)
+        .json({ message: "잘못된 토큰입니다." });
+    }
+
     res
       .status(StatusCodes.INTERNAL_SERVER_ERROR)
       .json({ message: "장바구니 담기를 실패했습니다." });
@@ -25,10 +42,12 @@ const addToCart = async (req, res) => {
 // 장바구니 조회
 const getCartItems = async (req, res) => {
   try {
-    const { userId, selectedIds = [] } = req.body;
+    const { selectedIds = [] } = req.body;
+    const token = req.headers.authorization;
+    const { userId } = await verifyToken(token);
 
     const [rows] = await cartModel.getCartItems({
-      userId: +userId,
+      userId,
       selectedIds,
     });
 
@@ -41,6 +60,19 @@ const getCartItems = async (req, res) => {
     res.status(StatusCodes.OK).json(rows);
   } catch (error) {
     console.log(error);
+
+    if (error instanceof TokenExpiredError) {
+      return res
+        .status(StatusCodes.UNAUTHORIZED)
+        .json({ message: "로그인 세션이 만료되었습니다. 다시 로그인하세요." });
+    }
+
+    if (error instanceof JsonWebTokenError) {
+      return res
+        .status(StatusCodes.BAD_REQUEST)
+        .json({ message: "잘못된 토큰입니다." });
+    }
+
     res
       .status(StatusCodes.INTERNAL_SERVER_ERROR)
       .json({ message: "장바구니 조회를 실패했습니다." });
@@ -50,9 +82,9 @@ const getCartItems = async (req, res) => {
 // 장바구니 아이템 삭제
 const deleteCart = async (req, res) => {
   try {
-    const { id } = req.params;
+    const { cartItemId } = req.params;
 
-    await cartModel.deleteCart(+id);
+    await cartModel.deleteCart(+cartItemId);
 
     res
       .status(StatusCodes.OK)

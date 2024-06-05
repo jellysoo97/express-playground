@@ -4,12 +4,13 @@ const {
   generateHashedPassword,
   generateHashedPasswordWithSalt,
 } = require("../utils/generate-hashed-password");
+const { signToken } = require("../utils/auth");
 
 // 회원가입
 const join = async (req, res) => {
   try {
     const { email, password } = req.body;
-    const { salt, hashedPassword } = generateHashedPassword(password);
+    const { salt, hashedPassword } = await generateHashedPassword(password);
 
     await userModel.create({ email, password: hashedPassword, salt });
     res.status(StatusCodes.CREATED).json({ message: "회원가입을 축하합니다." });
@@ -34,7 +35,10 @@ const login = async (req, res) => {
     }
 
     const user = rows[0];
-    const hashedPassword = generateHashedPasswordWithSalt(password, user.salt);
+    const hashedPassword = await generateHashedPasswordWithSalt(
+      password,
+      user.salt
+    );
     const isPasswordValid = user.password === hashedPassword;
 
     if (!isPasswordValid) {
@@ -43,13 +47,7 @@ const login = async (req, res) => {
         .json({ message: "비밀번호를 재입력해주세요." });
     }
 
-    const token = jwt.sign(
-      { userId: user.id, email: user.email },
-      config.jwt.privateKey,
-      {
-        expiresIn: config.jwt.expiresInHour,
-      }
-    );
+    const token = await signToken(user);
     res.cookie("token", token, { httpOnly: true });
     res.status(StatusCodes.OK).json({ message: "환영합니다!" });
   } catch (error) {

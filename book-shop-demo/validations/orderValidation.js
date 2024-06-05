@@ -49,7 +49,6 @@ const orderValidation = {
       .notEmpty()
       .isString()
       .withMessage("책 제목은 문자열입니다."),
-    body("userId").notEmpty().isInt().withMessage("유저 아이디는 숫자입니다."),
   ],
   getOrderList: [],
   getOrderDetail: [],
