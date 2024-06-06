@@ -9,12 +9,12 @@ const generateHashedPassword = async (password) => {
   return { salt, hashedPassword };
 };
 
-const generateHashedPasswordWithSalt = async (password, salt) => {
+const checkPassword = async (password, user) => {
   const hashedPassword = crypto
-    .pbkdf2Sync(password, salt, 10000, 10, "sha512")
+    .pbkdf2Sync(password, user.salt, 10000, 10, "sha512")
     .toString("base64");
 
-  return hashedPassword;
+  return hashedPassword === user.password;
 };
 
-module.exports = { generateHashedPassword, generateHashedPasswordWithSalt };
+module.exports = { generateHashedPassword, checkPassword };

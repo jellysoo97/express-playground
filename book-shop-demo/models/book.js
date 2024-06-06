@@ -10,11 +10,11 @@ const DATE_RANGE_QUERY =
   "pub_date BETWEEN DATE_SUB(NOW(), INTERVAL 1 MONTH) AND NOW()";
 
 const bookModel = {
-  getAllBooks: ({ isNew, categoryId, n, page }) => {
+  getAllBooks: async ({ isNew, categoryId, n, page }) => {
     const offset = n * (page - 1);
 
     if (categoryId) {
-      return conn
+      const [rows] = await conn
         .promise()
         .execute(
           `${DEFAULT_SELECT_QUERY} WHERE category_id=? ${
@@ -22,9 +22,19 @@ const bookModel = {
           } ${PAGINATION_QUERY}`,
           [categoryId, n, offset]
         );
+      const total = await conn
+        .promise()
+        .execute(
+          `SELECT count(*) FROM books WHERE category_id=? ${
+            isNew ? `AND ${DATE_RANGE_QUERY}` : ``
+          }`,
+          [categoryId]
+        );
+
+      return { total, currentPage: n, items: rows };
     }
 
-    return conn
+    const [rows] = await conn
       .promise()
       .execute(
         `${DEFAULT_SELECT_QUERY} ${
@@ -32,14 +42,34 @@ const bookModel = {
         } ${PAGINATION_QUERY}`,
         [n, offset]
       );
-  },
-  getBookById: ({ bookId, userId }) => {
-    return conn
+    const total = await conn
       .promise()
       .execute(
-        `SELECT *, ${LIKES_COUNT_QUERY}, ${LIKED_QUERY} FROM books LEFT JOIN category ON books.category_id=category.category_id WHERE books.id=?`,
-        [bookId, userId, bookId]
+        `SELECT count(*) FROM books ${isNew ? `WHERE ${DATE_RANGE_QUERY}` : ``}`
       );
+
+    return { total, currentPage: n, items: rows };
+  },
+  getBookById: async ({ bookId, userId }) => {
+    if (userId) {
+      const [rows] = await conn
+        .promise()
+        .execute(
+          `SELECT *, ${LIKES_COUNT_QUERY}, ${LIKED_QUERY} FROM books LEFT JOIN category ON books.category_id=category.category_id WHERE books.id=?`,
+          [bookId, userId, bookId]
+        );
+
+      return rows;
+    }
+
+    const [rows] = await conn
+      .promise()
+      .execute(
+        `SELECT * FROM books LEFT JOIN category ON books.category_id=category.category_id WHERE books.id=?`,
+        [bookId]
+      );
+
+    return rows;
   },
 };
 

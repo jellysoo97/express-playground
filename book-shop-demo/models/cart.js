@@ -9,24 +9,28 @@ const cartModel = {
         [bookId, quantity, userId]
       );
   },
-  getCartItems: ({ userId, selectedIds }) => {
+  getCartItems: async ({ userId, selectedIds }) => {
     const isSelected = selectedIds.length > 0;
 
     if (isSelected) {
-      return conn.promise().query(
+      const [rows] = await conn.promise().query(
         `SELECT cartItems.id, book_id, title, summary, quantity, price FROM cartItems 
           LEFT JOIN books ON cartItems.book_id=books.id 
           WHERE user_id=? AND cartItems.id IN (?)`,
         [userId, selectedIds]
       );
+
+      return rows;
     }
 
-    return conn.promise().execute(
+    const [rows] = await conn.promise().execute(
       `SELECT cartItems.id, book_id, title, summary, quantity, price FROM cartItems 
         LEFT JOIN books ON cartItems.book_id=books.id 
         WHERE user_id=?`,
       [userId]
     );
+
+    return rows;
   },
   deleteCart: (id) => {
     return conn.promise().execute("DELETE FROM cartItems WHERE id=?", [id]);
