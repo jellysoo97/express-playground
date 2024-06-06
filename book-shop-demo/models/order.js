@@ -1,74 +1,83 @@
 const conn = require("../config/db");
 
 const orderModel = {
-  order: async (data) => {
-    const {
-      items,
-      delivery,
-      totalQuantity,
-      totalPrice,
-      firstBookTitle,
-      userId,
-    } = data;
-
-    // 1. insert into delivery
+  addDelivery: async ({ address, receiver, contact }) => {
     const [deliveryResult] = await conn
       .promise()
       .execute(
         "INSERT INTO delivery (address, receiver, contact) VALUES (?, ?, ?)",
-        [delivery.address, delivery.receiver, delivery.contact]
+        [address, receiver, contact]
       );
-    const deliveryId = deliveryResult.insertId;
 
-    // 2. insert into orders
+    return deliveryResult.insertId;
+  },
+  addOrder: async ({
+    firstBookTitle,
+    totalQuantity,
+    totalPrice,
+    userId,
+    deliveryId,
+  }) => {
     const [ordersResult] = await conn.promise().execute(
       `INSERT INTO orders (book_title, total_quantity, total_price, user_id, delivery_id) 
       VALUES (?, ?, ?, ?, ?)`,
       [firstBookTitle, totalQuantity, totalPrice, userId, deliveryId]
     );
-    const orderId = ordersResult.insertId;
 
-    // 3. get cartItems info
+    return ordersResult.insertId;
+  },
+  getCartItems: async (items) => {
     const [cartItemsResult] = await conn
       .promise()
       .query("SELECT book_id, quantity FROM cartItems WHERE id IN (?)", [
         items,
       ]);
 
-    // 4. insert into orderedList
-    const orderedList = cartItemsResult.map((item) => [
+    return cartItemsResult;
+  },
+  addOrderedList: async (orderId, cartItems) => {
+    const orderedList = cartItems.map((item) => [
       orderId,
       item.book_id,
       item.quantity,
     ]);
-    await conn
+
+    return conn
       .promise()
       .query(`INSERT INTO orderedList (order_id, book_id, quantity) VALUES ?`, [
         orderedList,
       ]);
-
-    // 5. delete items from cart
+  },
+  deleteCartItemsFromCart: async (items) => {
     return conn
       .promise()
       .query(`DELETE FROM cartItems WHERE id IN (?)`, [items]);
   },
-  getOrderList: () => {
-    return conn.promise().execute(`
+  getOrderList: async (userId) => {
+    const [rows] = await conn.promise().execute(
+      `
       SELECT orders.id, created_at, address, receiver, contact, book_title, total_quantity, total_price
       FROM orders
       LEFT JOIN delivery ON orders.delivery_id = delivery.id
-    `);
+      WHERE orders.user_id = ?
+    `,
+      [userId]
+    );
+
+    return rows;
   },
-  getOrderDetail: (orderId) => {
-    return conn.promise().execute(
+  getOrderDetail: async ({ orderId, userId }) => {
+    const [rows] = await conn.promise().execute(
       `
       SELECT orderedList.book_id, title, author, price, quantity
       FROM orderedList
       LEFT JOIN books ON orderedList.book_id = books.id
-      WHERE order_id = ?
+      WHERE order_id = ? AND user_id = ?
     `,
-      [orderId]
+      [orderId, userId]
     );
+
+    return rows;
   },
 };
 

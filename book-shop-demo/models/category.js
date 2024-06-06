@@ -2,7 +2,9 @@ const conn = require("../config/db");
 
 const categoryModel = {
   getAllCategories: () => {
-    return conn.promise().execute("SELECT * FROM category");
+    const [rows] = conn.promise().execute("SELECT * FROM category");
+
+    return rows;
   },
 };
 

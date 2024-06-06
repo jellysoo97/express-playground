@@ -15,7 +15,7 @@ router.post("/login", validate(userValidation.login), userController.login);
 router.post(
   "/check-user",
   validate(userValidation.checkUser),
-  userController.checkUser
+  userController.checkUserBeforeResetPassword
 );
 
 // 비밀번호 초기화

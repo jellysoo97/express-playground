@@ -10,10 +10,12 @@ const userModel = {
         user.salt,
       ]);
   },
-  login: (email) => {
-    return conn
+  getUserByEmail: async (email) => {
+    const [rows] = await conn
       .promise()
-      .execute("SELECT * FROM users WHERE email =?", [email]);
+      .execute("SELECT * FROM users WHERE email = ?", [email]);
+
+    return rows[0];
   },
   resetPassword: (user) => {
     return conn
