@@ -10,11 +10,11 @@ const getAllBooks = async ({ isNew, categoryId, n, page }) => {
     page,
   });
 
-  if (!books) {
+  if (!books.items) {
     throw new ApiError(StatusCodes.NOT_FOUND, "등록된 도서가 없습니다.");
   }
 
-  return books;
+  return { ...books, totalPage: Math.ceil(books.total / n) };
 };
 
 const getBookById = async ({ bookId, userId }) => {
