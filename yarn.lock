@@ -68,6 +68,11 @@ call-bind@^1.0.7:
     get-intrinsic "^1.2.4"
     set-function-length "^1.2.1"
 
+camelcase-input@^1.0.5:
+  version "1.0.5"
+  resolved "https://registry.yarnpkg.com/camelcase-input/-/camelcase-input-1.0.5.tgz#47c8b7f993de04397f355f0b2b5ca621510c4799"
+  integrity sha512-PV1GhovMH/QrYidFsqtSIr1rBCDc7NvhcWgifFwyzO9+lNmEpMRi6FQwA2ZEI6fMbvOFmU8qqYFjjRuiBSr2YQ==
+
 combined-stream@^1.0.8:
   version "1.0.8"
   resolved "https://registry.yarnpkg.com/combined-stream/-/combined-stream-1.0.8.tgz#c3d45a8b34fd730631a110a8a2520682b31d5a7f"
