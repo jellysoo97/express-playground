@@ -22,16 +22,16 @@ const bookModel = {
           } ${PAGINATION_QUERY}`,
           [categoryId, n, offset]
         );
-      const total = await conn
+      const [totalResult] = await conn
         .promise()
         .execute(
-          `SELECT count(*) FROM books WHERE category_id=? ${
+          `SELECT count(*) AS total FROM books WHERE category_id=? ${
             isNew ? `AND ${DATE_RANGE_QUERY}` : ``
           }`,
           [categoryId]
         );
 
-      return { total, currentPage: n, items: rows };
+      return { total: totalResult[0].total, currentPage: n, items: rows };
     }
 
     const [rows] = await conn
@@ -42,13 +42,15 @@ const bookModel = {
         } ${PAGINATION_QUERY}`,
         [n, offset]
       );
-    const total = await conn
+    const [totalResult] = await conn
       .promise()
       .execute(
-        `SELECT count(*) FROM books ${isNew ? `WHERE ${DATE_RANGE_QUERY}` : ``}`
+        `SELECT count(*) AS total FROM books ${
+          isNew ? `WHERE ${DATE_RANGE_QUERY}` : ``
+        }`
       );
 
-    return { total, currentPage: n, items: rows };
+    return { total: totalResult[0].total, currentPage: n, items: rows };
   },
   getBookById: async ({ bookId, userId }) => {
     if (userId) {
