@@ -1,0 +1,202 @@
+/* 
+  main: #606060;
+  sub1: #AAAAAA;
+  sub2: #E0E0E0;
+  bg: #F0F0F0;
+ */
+
+ /* 공통 */
+body {
+  margin: 0;
+	line-height: 1;
+	padding: 0;
+	border: 0;
+	font-size: 100%;
+	font: inherit;
+	vertical-align: baseline;
+  display: flex;
+  justify-content: center;
+  color: #606060;
+}
+p {
+  margin: 0px;
+}
+input::-webkit-outer-spin-button,
+input::-webkit-inner-spin-button {
+  -webkit-appearance: none;
+  margin: 0;
+}
+input[type="number"] {
+  text-align: right;
+}
+
+#container {
+  background-color: #f6f6f6;
+  width: 400px;
+	font-size: 16px;
+  min-height: 100vh;
+}
+
+.title {
+  margin: 0px;
+  padding-left: 20px;
+  padding-top: 30px;
+  padding-bottom: 30px;
+}
+
+ /* 현재자산 start */
+.current-asset {
+  padding: 12px 20px;
+  background-color: white;
+  border-radius: 12px;
+  margin: 0px 20px;
+}
+.current-asset-row {
+  display: flex;
+  align-items: center;
+  justify-items: center;
+}
+
+.current-asset-label {
+  padding-right: 20px;
+  width: 80px;
+  min-width: 80px;
+}
+
+.current-asset-value {
+  padding: 14px;
+  padding-right: 0px;
+  font-size: 16px;
+  width: 100%;
+  border: none;
+  text-align: right;
+  cursor: pointer;
+}
+
+.current-asset-input {
+  padding: 14px;
+  font-size: 16px;
+  background-color: #E0E0E0;
+  border-radius: 12px;
+  width: 100%;
+  border: none;
+  text-align: right;
+}
+
+.current-asset-input:focus {
+  background-color: white;
+}
+ /* 현재자산 end */
+ 
+ .margin-top-54 {
+  margin-top: 54px;
+ }
+ 
+ /* 소비내역 작성하기 start */
+.add-item {
+  margin: 0px 20px;
+}
+
+button.add-item-button {
+  background-color: #F0F0F0;
+  border: none;
+  border: 1px solid #E0E0E0;
+  border-radius: 12px;
+  padding: 12px;
+  font-size: 16px;
+  width: 100%;
+  margin-top: 12px;
+}
+
+.add-item-detail {
+  background: white;
+  border-radius: 12px;
+  padding: 8px 20px 20px 20px;
+  margin: 20px;
+  margin-bottom: 54px;
+}
+
+
+section.item-section {
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  margin-bottom: 12px;
+}
+ /* 소비내역 작성하기 end */
+ 
+ /* 가계부 목록 start */
+.history {
+  margin: 12px 20px;
+}
+
+.history-per-day {
+  margin-top: 32px;
+}
+
+.history-per-day:first-child {
+  margin-top: 20px;
+}
+
+.history-date {
+  font-size: 13px;
+  margin-bottom: 10px;
+}
+
+.history-item {
+  background-color: white;
+  border-radius: 12px;
+  padding: 18px 14px 8px;
+  margin-bottom: 10px;
+}
+
+.history-item-column {
+  display: flex;
+  justify-content: space-between;
+  margin-bottom: 8px;;
+}
+
+.history-item-column .create-at {
+  font-size: 13px;
+}
+
+.history-item-column .history-detail {
+  width: 100%;
+  margin: 0 16px;
+  font-size: 18px;
+}
+.history-item-column .history-detail-row {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  margin-bottom: 10px;
+}
+.history-item-column .history-detail-subtitle {
+  text-align: right;
+}
+.history-item-column .history-detail-body {
+  margin: 0px;
+  font-size: 14px;
+  text-align: right;
+}
+
+.history-item-column .delete-button {
+  background: white;
+  border: 1px solid #E0E0E0;
+  border-radius: 24px;
+  min-width: 48px;
+  min-height: 48px;
+  cursor: pointer;
+}
+
+.history-item-column .delete-section {
+  display: flex;
+  align-items: center;
+}
+
+.history-item-caption {
+  border-top: 1px solid #E0E0E0;
+  padding-top: 8px;
+  font-size: 13px;
+  text-align: right;
+}
