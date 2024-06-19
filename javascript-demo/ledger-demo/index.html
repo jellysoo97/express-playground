@@ -1,0 +1,84 @@
+<!DOCTYPE html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+    <meta http-equiv="X-UA-Compatible" content="IE=edge" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>Document</title>
+    <link href="./css/common.css" rel="stylesheet" />
+    <link href="./css/index.css" rel="stylesheet" />
+  </head>
+  <body>
+    <main id="container">
+      <h1 class="title">🐷 가계부</h1>
+
+      <!-- 현재 자산 start -->
+      <div class="current-asset">
+        <div class="current-asset-row c-container-price">
+          <label class="current-asset-label">현재 자산</label>
+          <p class="v-show current-asset-value">-</p>
+          <input type="number" class="v-none current-asset-input" placeholder="현재 자산을 등록해주세요"/>
+        </div>
+        <button class="c-button c-large-button current-asset-button v-none">현재 자산 등록</button>
+      </div>
+      <!-- 현재 자산 end -->
+      
+      <div class="margin-top-54"></div>
+
+      <!-- 소비내역 작성하기 start -->
+      <div class="add-item">
+        <button class="v-none c-button add-item-button">➕ 소비내역 작성하기</button>
+      </div>
+
+      <section class="v-none add-item-detail">
+        <h3>소비내역 작성하기</h3>
+        <section class="item-section">
+          <label class="c-label" for="item-category">카테고리</label>
+          <input
+            class="c-input"
+            list="item-categories"
+            id="item-category"
+            name="item-category"
+            placeholder="카테고리를 선택해주세요"
+            required
+          />
+          <datalist id="item-categories">
+            <option value="카페"></option>
+            <option value="편의점"></option>
+            <option value="식사"></option>
+            <option value="쇼핑"></option>
+          </datalist>
+        </section>
+        <section class="item-section c-container-price">
+          <label class="c-label" for="item-price">지출 금액</label>
+          <input
+            class="c-input"
+            type="number"
+            id="item-price"
+            name="item-price"
+            placeholder="지출금액을 입력해주세요"
+            min="0"
+            required
+          />
+        </section>
+        <section class="item-section">
+          <label class="c-label" for="item-description">내용</label>
+          <input
+            class="c-input"
+            type="text"
+            id="item-description"
+            name="item-description"
+            required
+            placeholder="내용을 입력해주세요"
+          />
+        </section>
+        <button class="c-button item-submit-button">등록하기</button>
+      </section>
+      <!-- 소비내역 작성하기 end -->
+
+      <!-- 가계부 목록 start -->
+      <section class="history"></section>
+    </main>
+    <script src="./js/index.js" type="module"></script>
+  </body>
+</html>
