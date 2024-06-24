@@ -3,6 +3,8 @@
     "start": "nodemon ./book-shop-demo/app.js"
   },
   "dependencies": {
+    "@types/react": "^18.3.3",
+    "@types/react-dom": "^18.3.0",
     "axios": "^1.6.8",
     "camelcase-input": "^1.0.5",
     "cookie-parser": "^1.4.6",
@@ -11,7 +13,9 @@
     "express-validator": "^7.0.1",
     "http-status-codes": "^2.3.0",
     "jsonwebtoken": "^9.0.2",
-    "mysql2": "^3.9.7"
+    "mysql2": "^3.9.7",
+    "react": "^18.3.1",
+    "react-dom": "^18.3.1"
   },
   "devDependencies": {}
 }
